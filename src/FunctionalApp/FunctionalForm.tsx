@@ -1,12 +1,15 @@
-import React, { useState } from "react";
-import { ErrorMessage } from "../ErrorMessage";
+import { useState } from "react";
 import { PhoneInput } from "./FunctionalAppComponents/PhoneInput";
-import { EmailInput } from "./FunctionalAppComponents/EmailInput";
-import { NameInput } from "./FunctionalAppComponents/NameInput";
-import { CityInput } from "./FunctionalAppComponents/CityInput";
 import { UserInformation } from "../types";
-import { FormProps } from "../PropType";
-import { capitalize, formatPhoneNumber } from "../utils/transformations";
+import { FormProps } from "../types";
+import { FunctionalTextInput } from "./FunctionalAppComponents/FunctionalTextInput";
+import {
+  isNameValid,
+  isEmailValid,
+  hasCity,
+  isPhoneValid,
+} from "../utils/validations";
+import { allCities } from "../utils/all-cities";
 
 const firstNameErrorMessage = "First name must be at least 2 characters long";
 const lastNameErrorMessage = "Last name must be at least 2 characters long";
@@ -17,19 +20,19 @@ const phoneNumberErrorMessage = "Invalid Phone Number";
 export const FunctionalForm = ({ setUserData }: FormProps) => {
   const [firstNameInputState, setFirstNameInputState] = useState("");
   const [lastNameInputState, setLastNameInputState] = useState("");
-  const [isFirstNameValid, setIsFirstNameValid] = useState(false);
-  const [isLastNameValid, setIsLastNameValid] = useState(false);
-
   const [emailInputState, setEmailInputState] = useState("");
-  const [isEmailValid, setIsEmailValid] = useState(false);
-
   const [cityInputState, setCityInputState] = useState("");
-  const [isCityValid, setIsCityValid] = useState(false);
-
   const [phoneInputState, setPhoneInputState] = useState(["", "", "", ""]);
-  const [isPhoneValid, setIsPhoneValid] = useState(false);
-
   const [hasInteractedWithForm, setHasInteractedWithForm] = useState(false);
+
+  const resetValues = () => {
+    setFirstNameInputState("");
+    setLastNameInputState("");
+    setEmailInputState("");
+    setCityInputState("");
+    setPhoneInputState(["", "", "", ""]);
+    setHasInteractedWithForm(false);
+  };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -37,33 +40,22 @@ export const FunctionalForm = ({ setUserData }: FormProps) => {
     setHasInteractedWithForm(true);
 
     const allValid =
-      isFirstNameValid &&
-      isLastNameValid &&
-      isEmailValid &&
-      isCityValid &&
-      isPhoneValid;
+      isNameValid(firstNameInputState) &&
+      isNameValid(lastNameInputState) &&
+      isEmailValid(emailInputState) &&
+      hasCity(cityInputState) &&
+      isPhoneValid(phoneInputState);
 
     const userInfo: UserInformation = {
-      firstName: capitalize(firstNameInputState),
-      lastName: capitalize(lastNameInputState),
-      email: emailInputState.trim(),
-      city: cityInputState.trim(),
-      phone: formatPhoneNumber(phoneInputState)!,
+      firstName: firstNameInputState,
+      lastName: lastNameInputState,
+      email: emailInputState,
+      city: cityInputState,
+      phone: phoneInputState.join(),
     };
 
     if (allValid) {
-      setFirstNameInputState("");
-      setIsFirstNameValid(false);
-      setLastNameInputState("");
-      setIsLastNameValid(false);
-      setEmailInputState("");
-      setIsEmailValid(false);
-      setCityInputState("");
-      setIsCityValid(false);
-      setPhoneInputState(["", "", "", ""]);
-      setIsPhoneValid(false);
-      setHasInteractedWithForm(false);
-
+      resetValues();
       setUserData(userInfo);
     } else {
       alert("bad data input");
@@ -78,60 +70,92 @@ export const FunctionalForm = ({ setUserData }: FormProps) => {
         <h3>User Information Form</h3>
       </u>
       {/* first name input */}
-      <NameInput
-        fieldName="firstName"
-        inputValue={firstNameInputState}
-        setInputValue={setFirstNameInputState}
-        setIsNameValid={setIsFirstNameValid}
-        isNameValid={isFirstNameValid}
+      <FunctionalTextInput
+        inputProps={{
+          id: "firstName",
+          name: "First Name",
+          placeholder: "Bilbo",
+          value: firstNameInputState,
+          onChange: (e) => {
+            const value = e.target.value;
+            if (/^[a-zA-Zà-ÿÀ-Ÿ' -]+$/.test(value) || value.length === 0)
+              setFirstNameInputState(value);
+          },
+        }}
+        errorMessage={firstNameErrorMessage}
+        shouldDisplayMessage={
+          !isNameValid(firstNameInputState) && hasInteractedWithForm
+        }
       />
-      <ErrorMessage
-        message={firstNameErrorMessage}
-        show={hasInteractedWithForm && !isFirstNameValid}
-      />
+
       {/* last name input */}
-      <NameInput
-        fieldName="lastName"
-        inputValue={lastNameInputState}
-        setInputValue={setLastNameInputState}
-        setIsNameValid={setIsLastNameValid}
-        isNameValid={isLastNameValid}
+      <FunctionalTextInput
+        inputProps={{
+          id: "lastName",
+          name: "Last Name",
+          placeholder: "Baggins",
+          value: lastNameInputState,
+          onChange: (e) => {
+            const value = e.target.value;
+            if (/^[a-zA-Zà-ÿÀ-Ÿ' -]+$/.test(value) || value.length === 0)
+              setLastNameInputState(value);
+          },
+        }}
+        errorMessage={lastNameErrorMessage}
+        shouldDisplayMessage={
+          !isNameValid(lastNameInputState) && hasInteractedWithForm
+        }
       />
-      <ErrorMessage
-        message={lastNameErrorMessage}
-        show={hasInteractedWithForm && !isLastNameValid}
-      />
+
       {/* Email Input */}
-      <EmailInput
-        emailInputState={emailInputState}
-        setEmailInputState={setEmailInputState}
-        isEmailComplete={isEmailValid}
-        setIsEmailComplete={setIsEmailValid}
+      <FunctionalTextInput
+        inputProps={{
+          id: "email",
+          name: "email",
+          placeholder: "bilbo-baggins@adventurehobbits.net",
+          value: emailInputState,
+          onChange: (e) => {
+            const value = e.target.value;
+            setEmailInputState(value);
+          },
+        }}
+        errorMessage={emailErrorMessage}
+        shouldDisplayMessage={
+          !isEmailValid(emailInputState) && hasInteractedWithForm
+        }
       />
-      <ErrorMessage
-        message={emailErrorMessage}
-        show={hasInteractedWithForm && !isEmailValid}
-      />
+
       {/* City Input */}
-      <CityInput
-        cityInputState={cityInputState}
-        setCityInputState={setCityInputState}
-        isCityValid={isCityValid}
-        setIsCityValid={setIsCityValid}
+      <FunctionalTextInput
+        inputProps={{
+          id: "city",
+          name: "City",
+          placeholder: "Hobbiton",
+          value: cityInputState,
+          onChange: (e) => {
+            const value = e.target.value;
+            if (/^[a-zA-Zà-ÿÀ-Ÿ' -]+$/.test(value) || value.length === 0)
+              setCityInputState(value);
+          },
+          list: "allCities",
+        }}
+        errorMessage={cityErrorMessage}
+        shouldDisplayMessage={!hasCity(cityInputState) && hasInteractedWithForm}
       />
-      <ErrorMessage
-        message={cityErrorMessage}
-        show={hasInteractedWithForm && !isCityValid}
-      />
+      <datalist id="allCities">
+        {allCities.map((city) => (
+          <option key={city} value={city} />
+        ))}
+      </datalist>
+
+      {/* Phone Input */}
       <PhoneInput
         phoneInputState={phoneInputState}
         setPhoneInputState={setPhoneInputState}
-        isPhoneValid={isPhoneValid}
-        setIsPhoneValid={setIsPhoneValid}
-      />
-      <ErrorMessage
-        message={phoneNumberErrorMessage}
-        show={hasInteractedWithForm && !isPhoneValid}
+        errorMessage={phoneNumberErrorMessage}
+        shouldDisplayMessage={
+          !isPhoneValid(phoneInputState) && hasInteractedWithForm
+        }
       />
       <input type="submit" value="Submit" />
     </form>

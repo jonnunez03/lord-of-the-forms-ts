@@ -4,13 +4,7 @@ export const capitalize = (str: string): string => {
   // `capitalize("jOn")` should output `"Jon"`
 };
 
-export const formatPhoneNumber = (numStrArr: string[]): string | null => {
-  const onlyNumbersRegex = /^\d*$/;
-  const isValidPhone =
-    numStrArr.join("").length === 7 &&
-    onlyNumbersRegex.test(numStrArr.join(""));
-
-  if (!isValidPhone) return null;
-  return numStrArr.join("-");
+export const formatPhoneNumber = (numStr: string): string => {
+  return numStr.split(",").join("-");
   // `formatPhoneNumber("1234567")` should be `"12-34-56-7"`
 };

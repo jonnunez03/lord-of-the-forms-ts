@@ -1,6 +1,6 @@
-import { Component, createRef, ReactNode } from "react";
-import { PhoneInputProps } from "../../PropType";
-import { formatPhoneNumber } from "../../utils/transformations";
+import { Component, createRef } from "react";
+import { PhoneInputProps } from "../../types";
+import { ErrorMessage } from "../../ErrorMessage";
 
 export class ClassPhoneInput extends Component<PhoneInputProps> {
   ref1 = createRef<HTMLInputElement>();
@@ -14,8 +14,7 @@ export class ClassPhoneInput extends Component<PhoneInputProps> {
 
   onChangeHandler =
     (index: number) => (e: React.ChangeEvent<HTMLInputElement>) => {
-      const { phoneInputState, setPhoneInputState, setIsPhoneValid } =
-        this.props;
+      const { phoneInputState, setPhoneInputState } = this.props;
 
       const value = e.target.value;
       const nextRef = this.inputRefs[index + 1];
@@ -35,60 +34,64 @@ export class ClassPhoneInput extends Component<PhoneInputProps> {
 
       setPhoneInputState(newState);
 
-      setIsPhoneValid(formatPhoneNumber(newState) === null ? false : true);
-
-      if (shouldGoNextRef) nextRef.current!.focus();
-      if (shouldGoPrevRef) prevRef.current!.focus();
+      if (shouldGoNextRef) nextRef.current.focus();
+      if (shouldGoPrevRef) prevRef.current.focus();
     };
 
-  render(): ReactNode {
+  render() {
     const { ref1, ref2, ref3, ref4 } = this;
-    const { phoneInputState } = this.props;
+    const { phoneInputState, errorMessage, shouldDisplayMessage } = this.props;
+
     return (
-      <div className="input-wrap">
-        <label htmlFor="phone">Phone:</label>
-        <div id="phone-input-wrap">
-          <input
-            type="text"
-            id="phone-input-1"
-            placeholder="55"
-            value={phoneInputState[0]}
-            onChange={this.onChangeHandler(0)}
-            ref={ref1}
-            maxLength={2}
-          />
-          -
-          <input
-            type="text"
-            id="phone-input-2"
-            placeholder="55"
-            value={phoneInputState[1]}
-            onChange={this.onChangeHandler(1)}
-            ref={ref2}
-            maxLength={2}
-          />
-          -
-          <input
-            type="text"
-            id="phone-input-3"
-            placeholder="55"
-            value={phoneInputState[2]}
-            onChange={this.onChangeHandler(2)}
-            ref={ref3}
-            maxLength={2}
-          />
-          -
-          <input
-            type="text"
-            id="phone-input-4"
-            placeholder="5"
-            value={phoneInputState[3]}
-            onChange={this.onChangeHandler(3)}
-            ref={ref4}
-            maxLength={1}
-          />
+      <>
+        <div className="input-wrap">
+          <label htmlFor="phone">Phone:</label>
+          <div id="phone-input-wrap">
+            <input
+              type="text"
+              id="phone-input-1"
+              placeholder="55"
+              value={phoneInputState[0]}
+              onChange={this.onChangeHandler(0)}
+              ref={ref1}
+              maxLength={2}
+            />
+            -
+            <input
+              type="text"
+              id="phone-input-2"
+              placeholder="55"
+              value={phoneInputState[1]}
+              onChange={this.onChangeHandler(1)}
+              ref={ref2}
+              maxLength={2}
+            />
+            -
+            <input
+              type="text"
+              id="phone-input-3"
+              placeholder="55"
+              value={phoneInputState[2]}
+              onChange={this.onChangeHandler(2)}
+              ref={ref3}
+              maxLength={2}
+            />
+            -
+            <input
+              type="text"
+              id="phone-input-4"
+              placeholder="5"
+              value={phoneInputState[3]}
+              onChange={this.onChangeHandler(3)}
+              ref={ref4}
+              maxLength={1}
+            />
+          </div>
         </div>
-      </div>
+        <div>
+          <ErrorMessage message={errorMessage} show={shouldDisplayMessage} />
+        </div>
+      </>
     );
   }
 }
